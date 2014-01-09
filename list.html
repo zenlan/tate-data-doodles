@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Tate Britain Collections</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <style>
+      body {font-family: sans-serif; padding:2%;}
+      #content div {border: 1px solid #ddd; padding: 5px;}
+      #content div span {font-weight: bold; font-size: larger; text-align: center;}
+      li {list-style-type: none; display: block;}
+      .form, h2 {text-align: center;}
+      .nav {position:absolute;top:5px;left:3%;}
+    </style>
+  </head>
+  <body>
+    <div class="nav"><h5><a href="rickshaw.html">graph</a></h5></div>
+    <div class="form">
+      <button onclick="fetch('f', 1);return false;">Works by female artists purchased</button>
+      <button onclick="fetch('m', 1); return false;">Works by male artists purchased</button>
+      <br />
+      <button onclick="fetch('f', 0);return false;">Works by female artists gifted</button>
+      <button onclick="fetch('m', 0);return false;">Works by male artists gifted</button>
+    </div>
+    <div>
+      <h2 id="heading"></h2>
+    </div>
+    <div id="content"></div>
+    <script src="http://code.jquery.com/jquery-1.9.1.min.js" type="text/javascript"></script>
+    <script>
+        function fetch(gender, type) {
+          var ajax = $.ajax({
+            url: 'api_ls.php?type=' + type + '&gender=' + gender,
+            type: 'GET',
+            dataType: 'jsonp',
+            contentType: 'application/json',
+            timeout: 36000,
+            cache: false
+          });
+          ajax.done(function(response, textStatus, jqXHR) {
+            display(response, type, gender);
+          });
+          ajax.fail(function(jqXHR, textStatus, errorThrown) {
+            console.log(errorThrown.message);
+          });
+        }
+        function display(data, type, gender) {
+          var text = 'Artworks by '
+                  + (gender === 'f' ? 'female' : 'male')
+                  + ' artists, '
+                  + (type === 1 ? 'purchased by' : 'gifted to')
+                  + ' <a href="http://www.tate.org.uk/about" target="_blank">Tate</a>'
+                  + ', by year';
+          document.getElementById("heading").innerHTML = text;
+          var tmp, name, unkno = 0, unkli = '', li = '';
+          $.each(data, function(i, item) {
+            if (item.acquired === '0') {
+              item.acquired = '????';
+            }
+            li += '<div id="y' + i + '"><span>'
+                    + item.acquired + ': '
+                    + item.total + '</span><ul>'
+                    + compileListItems(item.works)
+                    + '</ul></div>';
+          });
+          $(li).appendTo($('#content').empty());
+        }
+        function compileListItems(works) {
+          var li = '';
+          $.each(works, function(n, artwork) {
+            li += '<li id="' + artwork.id + '">'
+                    + '<a href="' + artwork.url + '" target="_blank">"'
+                    + artwork.title + '"</a> by '
+                    + parseName(artwork.artist)
+                    + ' (' + artwork.credit + ')</li>';
+          });
+          return li;
+        }
+        function parseName(name) {
+          var result = '';
+          if (name !== null) {
+            var tmp = name.split(', ');
+            for (i = tmp.length - 1; i >= 0; i--) {
+              result += ' ' + tmp[i];
+            }
+          } else {
+            result = 'unknown';
+          }
+          return result;
+        }
+        jQuery(document).ready(function($) {
+          fetch('f', 1);
+        });
+    </script>
+  </body>
+</html>

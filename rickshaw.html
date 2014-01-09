@@ -1,0 +1,111 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Tate Britain Collection</title>
+    <meta name = "viewport" content = "initial-scale = 1, user-scalable = no">
+    <link type="text/css" rel="stylesheet" href="rickshaw/src/css/graph.css">
+    <link type="text/css" rel="stylesheet" href="rickshaw/src/css/detail.css">
+    <link type="text/css" rel="stylesheet" href="rickshaw/src/css/legend.css">
+    <style>
+      body {font-family: sans-serif; padding:2%;}
+      #chart_container {width: 960px;}
+      #legend_container {position: absolute;top:40%;left: 10%;}
+      .form {text-align: center;}
+      .nav {position:absolute;top:5px;left:3%;}
+    </style>
+  </head>
+  <body>
+    <div class="nav"><h5><a href="list.html">list</a></h5></div>
+    <div class="form">
+      <button onclick="fetch(1);return false;">Purchased</button>
+      <button onclick="fetch(0);return false;">Gifted</button>
+    </div>
+    <h2 id="heading">Artworks purchased by <a href="http://www.tate.org.uk/about" target="_blank">Tate</a> by year since 1900</h2>
+    <div id="chart_container">
+      <div id="chart"></div>
+      <div id="legend_container">
+        <div id="smoother" title="Smoothing"></div>
+        <div id="legend"></div>
+      </div>
+    </div>
+    <script src="http://code.jquery.com/jquery-1.10.2.min.js" type="text/javascript"></script>
+    <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.min.js" type="text/javascript"></script>
+    <script src="rickshaw/vendor/d3.v3.js"></script>
+    <!-- this rickshaw.js has been hacked to fix the hover detail values, find "ZENLAN HACK" -->
+    <script src="rickshaw.js"></script>
+    <script>
+        function fetch(type) {
+          document.getElementById("chart").innerHTML = '';
+          document.getElementById("legend").innerHTML = '';
+          document.getElementById("heading").text = 'Artworks '
+                  + (type === 1 ? 'purchased by' : 'gifted to') + ' Tate since 1900';
+          Rickshaw.Graph.JSONP.Static = Rickshaw.Class.create(Rickshaw.Graph.JSONP, {
+            request: function() {
+              $.ajax({
+                url: this.dataURL,
+                success: this.success.bind(this),
+                error: this.error.bind(this),
+                dataType: 'jsonp',
+                jsonpCallback: 'callback'
+              });
+            }
+          });
+          var jsonpGraph = new Rickshaw.Graph.JSONP.Static({
+            element: document.getElementById("chart"),
+            width: 900,
+            height: 400,
+            renderer: 'line',
+            interpolation: 'cardinal',
+            dataURL: 'api_rs.php?type=' + type,
+            onData: function(d) {
+              return d;
+            },
+            onComplete: function(transport) {
+              var graph = transport.graph;
+              var xAxis = new Rickshaw.Graph.Axis.X({
+                graph: graph,
+                orientation: 'top'});
+              xAxis.render();
+              var yAxis = new Rickshaw.Graph.Axis.Y({graph: graph});
+              yAxis.render();
+              var legend = new Rickshaw.Graph.Legend({
+                graph: graph,
+                element: document.getElementById('legend')
+              });
+              var shelving = new Rickshaw.Graph.Behavior.Series.Toggle({
+                graph: graph,
+                legend: legend
+              });
+              var highlighter = new Rickshaw.Graph.Behavior.Series.Highlight({
+                graph: graph,
+                legend: legend
+              });
+              var order = new Rickshaw.Graph.Behavior.Series.Order({
+                graph: graph,
+                legend: legend
+              });
+              var hoverDetail = new Rickshaw.Graph.HoverDetail({
+                graph: graph,
+                xFormatter: function(x) {
+                  return x;
+                },
+                yFormatter: function(y) {
+                  return y;
+                }
+              });
+            },
+            series: [{
+                name: 'Female Artists',
+                color: '#00BFC4'
+              }, {
+                name: 'Male Artists',
+                color: '#FFA705'
+              }]
+          });
+        }
+        jQuery(document).ready(function showGraph($) {
+          fetch(1);
+        });
+    </script>
+  </body>
+</html>
