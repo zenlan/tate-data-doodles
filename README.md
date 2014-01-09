@@ -3,6 +3,7 @@
 ## VIEWS
 
 [Graphs describing Tate purchases/gifts by year and artist gender](http://www.zenlan.com/tate/rickshaw.html)
+
 [Lists detailing Tate purchases/gifts by year and artist gender](http://www.zenlan.com/tate/list.html)
 
 ## SOURCE
@@ -21,6 +22,7 @@ views.sql creates views that
 PHP files that can be called to read and/or write the JSON files that power the views, returning the data JSONP wrapped.
 
 api_ls.php feeds the list view.
+
 api_rs.php feeds the graph view.
 
 ## Dependencies
