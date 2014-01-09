@@ -1,31 +1,30 @@
-# Excursions into Tate Gallery's Open Data
+## Excursions into Tate Gallery's Open Data
 
-## VIEWS
+### VIEWS
 
 [Graphs describing Tate purchases/gifts by year and artist gender](http://www.zenlan.com/tate/rickshaw.html)
 
 [Lists detailing Tate purchases/gifts by year and artist gender](http://www.zenlan.com/tate/list.html)
 
-## SOURCE
+### SOURCE
 
 The data is sourced from the [Tate Collection repo](https://github.com/tategallery/collection)
 
-## TOOLS
+### TOOLS
 
-### SQL
+#### SQL
 
-tables.sql imports the Tate CSV data files, artist_data.csv and artwork_data.csv, into a MySQL database
-views.sql creates views that
+"tables.sql" imports the Tate CSV data files, artist_data.csv and artwork_data.csv, into a MySQL database.
 
-### APIs
+"views.sql" creates views used by the APIs.
 
-PHP files that can be called to read and/or write the JSON files that power the views, returning the data JSONP wrapped.
+#### APIs
 
-api_ls.php feeds the list view.
+PHP files that can be called to read and/or write the JSON files that power the views, returning the data JSONP wrapped. See comments at the top of each file for usage details.
 
-api_rs.php feeds the graph view.
+"api_ls.php" feeds the list view. "api_rs.php feeds the graph view."
 
-## Dependencies
+### Dependencies
 
 [Rickshaw js/css](https://github.com/shutterstock/rickshaw) graphing library is included under the terms of the Rickshaw license. Please note that a very minor hack to rickshaw.js, Rickshaw.Graph.HoverDetail.initialize(), is in place in order to fix the format of hover details.
 
@@ -33,7 +32,7 @@ api_rs.php feeds the graph view.
 
 [jQuery and jQueryUI](http://code.jquery.com) are linked to and not bundled.
 
-## Links
+### Links
 
 [Twitter](http://twitter.com/zenlan)
 
