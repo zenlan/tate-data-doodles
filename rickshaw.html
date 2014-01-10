@@ -17,8 +17,10 @@
   <body>
     <div class="nav"><h5><a href="list.html">list</a></h5></div>
     <div class="form">
-      <button onclick="fetch(1);return false;">Purchased</button>
-      <button onclick="fetch(0);return false;">Gifted</button>
+      <button onclick="fetch(1);
+          return false;">Purchased</button>
+      <button onclick="fetch(0);
+          return false;">Gifted</button>
     </div>
     <h2 id="heading">Artworks purchased by <a href="http://www.tate.org.uk/about" target="_blank">Tate</a> by year since 1900</h2>
     <div id="chart_container">
@@ -91,6 +93,13 @@
                 },
                 yFormatter: function(y) {
                   return y;
+                },
+                onShow: function(event) {
+                  var goto = 'list.html#x' + $(".x_label").text();
+                  $('#chart_container').on('click', function() {
+                    location.reload();
+                    location.href=goto;
+                  });
                 }
               });
             },
