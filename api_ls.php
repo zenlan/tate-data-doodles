@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @arg callback
  * JSONP AJAX callback function
@@ -29,7 +30,6 @@
  * @return jsonp two arrays, one of male artists, one of female artists, with
  * data arrays comprising name pairs of year/total as x/y for a Rickshaw graph
  */
-
 if (!isset($_REQUEST['callback']) || empty($_REQUEST['callback'])) {
   write_error_log('NO CALLBACK');
   exit(1);
@@ -44,6 +44,7 @@ if (!isset($_REQUEST['gender']) || empty($_REQUEST['gender'])) {
   write_error_log('NO GENDER');
   exit(1);
 }
+
 define('TATE_CACHE_FILE', 'json/tate_cache_' . strtoupper($_REQUEST['gender']) . $_REQUEST['type'] . '.json');
 
 function write_error_log($type) {
@@ -62,8 +63,16 @@ function write_access_log() {
 
 function write_cache() {
   try {
-    if (file_put_contents(TATE_CACHE_FILE, json_encode1(query()))) {
-      return TRUE;
+    $gender = strtoupper($_REQUEST['gender']);
+    if ($gender !== 'B') {
+      if (file_put_contents(TATE_CACHE_FILE, json_encode1(query($gender)))) {
+        return TRUE;
+      }
+    } else {
+      $data = array('F' => query('F'), 'M' => query('M'), 'O' => query(''));
+      if (file_put_contents(TATE_CACHE_FILE, json_encode1($data))) {
+        return TRUE;
+      }
     }
   } catch (Exception $e) {
     error_response($e->getMessage());
@@ -101,10 +110,10 @@ function error_response($message) {
 function json_encode1($arr) {
   array_walk_recursive($arr, function (&$item, $key) {
         if (is_string($item))
-          if (mb_detect_encoding($item,"UTF-8, ISO-8859-1") != 'UTF-8') {
+          if (mb_detect_encoding($item, "UTF-8, ISO-8859-1") != 'UTF-8') {
             $item = utf8_encode($item);
           }
-          $item = mb_encode_numericentity($item, array(0x80, 0xffff, 0, 0xffff), 'UTF-8');
+        $item = mb_encode_numericentity($item, array(0x80, 0xffff, 0, 0xffff), 'UTF-8');
       });
   return mb_decode_numericentity(json_encode($arr), array(0x80, 0xffff, 0, 0xffff), 'UTF-8');
 }
@@ -116,16 +125,15 @@ function jsonpWrap($json) {
   return $jsonp;
 }
 
-function query() {
+function query($gender) {
   $mdbh = new PDO('mysql:host=localhost;dbname=tate', 'root', '');
   if (!$mdbh) {
     error_response($mdbh->errorInfo());
   }
   $result = $data = array();
-  $sql = 'SELECT *
-      FROM `view_acquired_by_gender`
-      WHERE `gender`="' . strtoupper($_REQUEST['gender']) . '"' .
-      ' AND `purchased`=' . $_REQUEST['type'];
+  $sql = 'SELECT * FROM `view_acquired_by_gender`'
+      . ' WHERE `purchased`=' . $_REQUEST['type']
+      . ' AND `gender`="' . $gender . '"';
   if ($res = $mdbh->query($sql)) {
     $data = $res->fetchAll(PDO::FETCH_ASSOC);
   }

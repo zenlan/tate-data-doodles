@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Tate Britain Collections</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <style>
+      body {font-family: sans-serif; padding:2%;}
+      #content td {border: 1px solid #ddd; padding: 5px; vertical-align: top;}
+      #content td.list {width: 28%;}
+      #content td.idx {width: 6%;}
+      #content span {}
+      li {list-style-type: none; display: block;}
+      .form, h2 {text-align: center;}
+      .nav {position:absolute;top:5px;left:3%;}
+    </style>
+  </head>
+  <body>
+    <div class="nav"><h5><a href="rickshaw.html">graph</a></h5></div>
+    <div class="form">
+      <button onclick="fetch(1);
+          return false;">Purchased</button>
+      <button onclick="fetch(0);
+          return false;">Gifted</button>
+    </div>
+    <div>
+      <h2 id="heading"></h2>
+    </div>
+    <table id="content">
+    </table>
+    <script src="http://code.jquery.com/jquery-1.9.1.min.js" type="text/javascript"></script>
+    <script>
+        function fetch(type) {
+          var ajax = $.ajax({
+            url: 'api_ls.php?gender=B&type=' + type,
+            type: 'GET',
+            dataType: 'jsonp',
+            contentType: 'application/json',
+            timeout: 36000,
+            cache: false
+          });
+          ajax.done(function(response, textStatus, jqXHR) {
+            display(response, type);
+          });
+          ajax.fail(function(jqXHR, textStatus, errorThrown) {
+            console.log(errorThrown.message);
+          });
+        }
+        function display(data, type) {
+          var text = 'Artworks '
+                  + (type === 1 ? 'purchased by' : 'gifted to')
+                  + ' <a href="http://www.tate.org.uk/about" target="_blank">Tate</a>'
+                  + ', by year';
+          document.getElementById("heading").innerHTML = text;
+          var id, td, tr = '';
+          $.each(data['M'], function(i, item) {
+            tr += '<tr><td class="idx" id="x' + item.acquired + '"><p>year: '
+                    + (item.acquired !== '0' ? item.acquired : '????') + '</p></td>'
+                    + '<td class="list" id="m' + item.acquired + '"><p>by male artists: ' + item.total + '</p>'
+                    + '<ul>' + compileListItems(item.works) + '</ul></td>'
+                    + '<td class="list" id="f' + item.acquired + '"><p>by female artists: 0</p>'
+                    + '<ul></ul></td>'
+                    + '<td class="list" id="o' + item.acquired + '"><p>by other artists: 0</p>'
+                    + '<ul></ul></td>'
+                    + '</tr>';
+          });
+          $(tr).appendTo($('#content').empty());
+          $.each(data['F'], function(i, item) {
+            td = document.getElementById('f' + item.acquired);
+            if (td !== null) {
+              $(td).html('<p>by female artists: ' + item.total + '</p><ul>' + compileListItems(item.works) + '</ul></td>');
+            }
+          });
+          $.each(data['O'], function(i, item) {
+            td = document.getElementById('o' + item.acquired);
+            if (td !== null) {
+              $(td).html('<p>by other artists: ' + item.total + '</p><ul>' + compileListItems(item.works) + '</ul></td>');
+            }
+          });
+        }
+        function compileListItems(works) {
+          var li = '';
+          $.each(works, function(n, artwork) {
+            li += '<li id="' + artwork.id + '">'
+                    + '<a href="' + artwork.url + '" target="_blank">"'
+                    + artwork.title + '"</a> by '
+                    + parseName(artwork.artist)
+                    + ' (' + artwork.credit + ')</li>';
+          });
+          return li;
+        }
+        function parseName(name) {
+          var result = '';
+          if (name !== null) {
+            var tmp = name.split(', ');
+            for (i = tmp.length - 1; i >= 0; i--) {
+              result += ' ' + tmp[i];
+            }
+          } else {
+            result = 'unknown';
+          }
+          return result;
+        }
+        jQuery(document).ready(function($) {
+          fetch(1);
+        });
+    </script>
+  </body>
+</html>
